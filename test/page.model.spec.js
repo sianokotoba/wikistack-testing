@@ -1,7 +1,7 @@
 var models = require('../models');
 var Page = models.Page;
 var expect = require('chai').expect;
-
+var marked = require('marked');
 
 // describe('Page model', function () {
 //   var ourPage, data;
@@ -31,11 +31,43 @@ var expect = require('chai').expect;
 describe('Page model', function () {
 
   describe('Virtuals', function () {
-    describe('route', function () {
-      it('returns the url_name prepended by "/wiki/"');
+
+    var ourPage, data;
+
+    beforeEach(function(done) {
+     Page.create({
+       title: "JS huh? Whaaaat    ",
+       content: "chai is crazy!!",
+       status: "open",
+       tags: ["chai", "crazy", "iloveit"]
+     })
+     .then(function(result) {
+        ourPage = result;
+        done();
+     })
+     .catch(console.error);
     });
+
+    afterEach(function() {
+     Page.destroy({
+        where: {
+            title: ourPage.title
+        }
+      });
+    });
+
+    describe('route', function () {
+      it('returns the url_name prepended by "/wiki/"', function() {
+        var urlTitle = ourPage.urlTitle;
+        expect(urlTitle).to.equal('JS_huh_Whaaaat_');
+        expect(ourPage.route).to.equal('/wiki/JS_huh_Whaaaat_');
+      });
+    });
+
     describe('renderedContent', function () {
-      it('converts the markdown-formatted content into HTML');
+      it('converts the markdown-formatted content into HTML', function(){
+        expect(ourPage.renderedContent).to.equal(marked(ourPage.content))
+      });
     });
   });
 
